@@ -11,10 +11,10 @@ class PotentialField:
         self._goal = goal
         self._map = map
 
-    def _calc_attractive_force(self, pos):
+    def calc_attractive_force(self, pos):
         return self._k_a * (self._goal - pos)
 
-    def _calc_repulsive_force(self, pos):
+    def calc_repulsive_force(self, pos):
         # Get vectors and distances to obstacles within
         # the obstacle threshold distance
         [obstacles, distances] = self._map.get_obstacles_in_radius(pos, self._obs_dist_thresh)
@@ -25,5 +25,5 @@ class PotentialField:
         return repulsion_vec
 
     def get_force(self, pos):
-        return self._calc_attractive_force(pos) + \
-               self._calc_repulsive_force(pos)
+        return self.calc_attractive_force(pos) + \
+               self.calc_repulsive_force(pos)

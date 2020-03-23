@@ -12,13 +12,39 @@ class Map:
         self._height = self._data.shape[1]  # y
 
     def get_width(self):
-        return
+        return self._width * self._resolution
+
+    def get_height(self):
+        return self._height * self._resolution
 
     def get_data(self):
-        return self._data.copy()
-
-    def get_image(self):
         return self._data.transpose().copy()
+
+    def get_inflated_obstacles_data(self, inflation_radius=1.0):
+        data = self._data.copy()
+        data_ref = self._data.copy()
+
+        inflate_cells = np.ceil(inflation_radius / self._resolution)
+        # if np.mod(inflate_cells, 2) == 0:
+        #     inflate_cells += 1
+        # Kernel dimensions should be odd-numbered values
+        kernel = (int(2 * inflate_cells + 1), int(2 * inflate_cells + 1))
+
+        # Apply one-cell width, zero padding at the boundaries of the array
+        x_padding = int(inflate_cells)
+        y_padding = int(inflate_cells)
+        data_ref = np.pad(self._data, ((x_padding, x_padding), (y_padding, y_padding)))
+
+        # To inflate the obstacles, we have to
+        # apply a dilation operation by running a
+        # max filter with a kernel in a convolution operation
+        for x in range(x_padding, data_ref.shape[0] - x_padding):
+            for y in range(y_padding, data_ref.shape[1] - y_padding):
+                data[x - x_padding, y - y_padding] = \
+                    np.min(data_ref[x - x_padding: x + x_padding + 1,
+                                    y - y_padding: y + y_padding + 1])
+
+        return data.transpose()
 
     def get_resolution(self):
         return self._resolution
@@ -90,13 +116,11 @@ class Map:
 
         return pos
 
-    def find_obstacle(self, pos, angle, max_dist):
+    def find_obstacle(self, pos, end):
         # Rasterize the line using Bresenham's algorithm
         # Use DDA to cover all cells that the ray passes through (modified Bresenham)
         cur_cell = self.worldToMap(pos)
         pos = self.mapToWorld(cur_cell)
-        end = np.array([pos[0] + max_dist * np.cos(angle),
-                        pos[1] + max_dist * np.sin(angle)])
         end_cell = self.worldToMap(end)
 
         # Cells that the ray traverses through
@@ -175,9 +199,16 @@ class Map:
 
         angles = np.arange(0, 2*np.pi + self._d_theta, self._d_theta)
         for angle in angles:
-            obstacle = self.find_obstacle(pos, angle, radius)
+            end = np.array([pos[0] + radius * np.cos(angle),
+                            pos[1] + radius * np.sin(angle)])
+            obstacle = self.find_obstacle(pos, end)
             if obstacle is not None:
                 obstacles.append(obstacle)
                 distances.append(np.linalg.norm(obstacle - pos))
 
         return obstacles, distances
+
+    def can_connect(self, pos1, pos2):
+        # Check if we can connect from pos1 to pos2
+        # using a straight line
+        return self.find_obstacle(pos1, pos2) is None
