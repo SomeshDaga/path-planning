@@ -12,21 +12,41 @@ class Robot:
         self._linear_vel = self._angular_vel = 0.0
         self._motion_vec = np.array([0.0, 0.0])
 
+    def is_at(self, point, tol=0.1):
+        if np.linalg.norm(self._pose[0:2] - point) <= tol:
+            return True
+        else:
+            return False
+
+    def is_facing(self, point, tol=0.1):
+        x_diff, y_diff = point[0] - self._pose[0], point[1] - self._pose[1]
+        heading = np.arctan2(y_diff, x_diff)
+        return self.has_heading(heading, tol=tol)
+
+    def has_heading(self, heading, tol=0.1):
+        if abs(angles.wrap_angle_diff(self._pose[2] - heading)) <= tol:
+            return True
+        else:
+            return False
+
     def set_desired_motion(self, motion_vec):
         self._motion_vec = motion_vec
 
-    def propagate(self, dt=0.1):
+    def propagate(self, dt=0.1, rotation_only=False):
         angle = self._pose[2]
 
         # Set the control inputs
         # Linear velocity
-        self._linear_vel = \
-            self._motion_vec[0] * np.cos(angle) + \
-            self._motion_vec[1] * np.sin(angle)
-        if self._linear_vel < 0:
-            self._linear_vel = max(self._linear_vel, -self._max_linear_vel)
+        if rotation_only:
+            self._linear_vel = 0
         else:
-            self._linear_vel = min(self._linear_vel, self._max_linear_vel)
+            self._linear_vel = \
+                self._motion_vec[0] * np.cos(angle) + \
+                self._motion_vec[1] * np.sin(angle)
+            if self._linear_vel < 0:
+                self._linear_vel = max(self._linear_vel, -self._max_linear_vel)
+            else:
+                self._linear_vel = min(self._linear_vel, self._max_linear_vel)
 
         # Angular Velocity
         angle_error = \

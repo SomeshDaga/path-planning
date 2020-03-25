@@ -1,5 +1,6 @@
 import numpy as np
 
+from .astar import AStar
 from graph import Vertex
 from map import Map
 from kdtree import KDTree
@@ -49,7 +50,10 @@ class PRM:
             self._vertices.append(vertex)
             self._kdtree.add_vertex(vertex)
 
-        for vertex in self._vertices:
+        self.connect_neighbours(self._vertices, num_neighbours=num_neighbours)
+
+    def connect_neighbours(self, vertices, num_neighbours=5):
+        for vertex in vertices:
             neighbours = self._kdtree.get_knn(vertex, k=num_neighbours)
             for n in neighbours:
                 # Check if we can connect to the neighbour
@@ -61,6 +65,14 @@ class PRM:
     def get_vertices(self):
         return self._vertices
 
-    def find_shortest_path(self, start, goal):
-        pass
+    def find_shortest_path(self, start, goal, num_neighbours=5):
+        # Add the start and goal to the list of vertices
+        # and initialize their nearest neighbours
+        start_vertex = Vertex(start)
+        goal_vertex = Vertex(goal)
+        self.connect_neighbours((start_vertex, goal_vertex),
+                                num_neighbours=num_neighbours)
 
+        # Use A* to compute the shortest path
+        heuristic = lambda vertex: np.sqrt(vertex.calc_dist_2(goal_vertex))
+        return AStar.find_path(start_vertex, goal_vertex, heuristic)

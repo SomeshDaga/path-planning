@@ -11,12 +11,14 @@ class KDTree:
 
     def add_vertex(self, vertex):
         self._root = self._add_vertex(self._root, vertex)
-        print("--")
 
     def _add_vertex(self, root, vertex, split_dim=0):
-        print(split_dim)
         if root is None:
             root = KDNode(vertex, split_dim)
+        elif root.get_vertex() == vertex:
+            # Do nothing in this case, since the vertex
+            # already exists
+            pass
         else:
             if vertex.get_data()[split_dim] < \
                root.get_vertex().get_data()[split_dim]:
