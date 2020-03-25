@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from map import Map
-from planners.pf import PotentialField
+from planners import PotentialField
 from robot import Robot
 from utils.load_map import load_map
 

@@ -4,7 +4,7 @@ import numpy as np
 
 from controller import Controller
 from map import Map
-from planners import PRM
+from planners import RRT
 from robot import Robot
 from utils.load_map import load_map
 
@@ -26,24 +26,24 @@ if __name__ == "__main__":
     robot_max_linear_vel = config.getfloat('ROBOT', 'max_linear_vel')
     robot_max_angular_vel = config.getfloat('ROBOT', 'max_angular_vel')
 
-    # PRM Settings
-    prm_num_samples = config.getint('PRM', 'num_samples')
-    prm_num_neighbours = config.getint('PRM', 'num_neighbours')
-    prm_inflation_radius = config.getfloat('PRM', 'inflation_radius')
+    # RRT Settings
+    rrt_num_iterations = config.getint('RRT', 'num_iterations')
+    rrt_step_length = config.getfloat('RRT', 'step_length')
+    rrt_inflation_radius = config.getfloat('RRT', 'inflation_radius')
 
     # Initialize map
     data = load_map(map_file)
     map = Map(data, resolution=map_resolution, d_theta=2*np.pi/num_scans)
 
     # Set start position and waypoints
-    start = np.array([0.5, 0.5])
+    start = np.array([7.0, 1.5])
     waypoints = np.array([[7.0, 1.5, 3*np.pi/2],
                           [9.0, 5.0, np.pi],
                           [3.0, 9.5, np.pi/2],
                           [0.5, 5.0, 0]])
 
     # Initialize algorithm
-    prm = PRM(map, inflation_radius=prm_inflation_radius)
+    rrt = RRT(map, inflation_radius=rrt_inflation_radius)
 
     # Initialize robot to starting position with zero heading
     # and initialize its controller
@@ -52,16 +52,13 @@ if __name__ == "__main__":
     robot.set_pose(start[0], start[1], 0.0)
     controller = Controller(robot)
 
-    # Generate PRM samples
-    prm.generate_roadmap(num_samples=prm_num_samples,
-                         num_neighbours=prm_num_neighbours)
-
     # Visit each waypoint sequentially
     plt.figure()
     for waypoint in waypoints:
-        path = prm.find_shortest_path(robot.get_pose()[0:2],
-                                      waypoint[0:2],
-                                      num_neighbours=prm_num_neighbours)
+        path = rrt.plan(robot.get_pose()[0:2],
+                        waypoint[0:2],
+                        iterations=rrt_num_iterations,
+                        step=rrt_step_length)
         path_x = list(vertex.get_data()[0] for vertex in path)
         path_y = list(vertex.get_data()[1] for vertex in path)
 
