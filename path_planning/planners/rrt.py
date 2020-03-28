@@ -73,7 +73,11 @@ class RRT:
             if result != Extend.TRAPPED:
                 if self.connect(tree_b, q_new, step=step) == Extend.REACHED:
                     heuristic = lambda vertex: np.sqrt(vertex.calc_dist_2(goal))
-                    return AStar.find_path(start, goal, heuristic)
+                    vertices = tree_a.get_all_vertices() + tree_b.get_all_vertices()
+                    return AStar.find_path(start, goal, heuristic), vertices
+
 
             tree_a, tree_b = tree_b, tree_a
 
+        vertices = tree_a.get_all_vertices() + tree_b.get_all_vertices()
+        return None, vertices

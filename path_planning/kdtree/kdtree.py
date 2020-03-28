@@ -12,6 +12,17 @@ class KDTree:
     def add_vertex(self, vertex):
         self._root = self._add_vertex(self._root, vertex)
 
+    def get_all_vertices(self):
+        vertices = []
+        self._get_vertices(self._root, vertices)
+        return vertices
+
+    def _get_vertices(self, root, vertices):
+        if root is not None:
+            self._get_vertices(root.left, vertices)
+            vertices.append(root.get_vertex())
+            self._get_vertices(root.right, vertices)
+
     def _add_vertex(self, root, vertex, split_dim=0):
         if root is None:
             root = KDNode(vertex, split_dim)
