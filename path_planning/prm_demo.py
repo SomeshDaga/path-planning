@@ -95,7 +95,7 @@ if __name__ == "__main__":
         controller.set_path(path_x, path_y, waypoint[2])
 
         # Draw the path
-        path_line, = ax.plot(path_x, path_y, color='green', linestyle='dashed', linewidth=3, label='Trajectory')
+        path_line, = ax.plot(path_x, path_y, color='green', linestyle='dashed', linewidth=3, label='Planned Trajectory')
 
         robot_marker = None
         dir_marker = None
@@ -127,10 +127,11 @@ if __name__ == "__main__":
         plt.annotate('{0}'.format(waypoint_idx), xy=(waypoint[0], waypoint[1]),
                      textcoords='offset points', xytext=(3, 7),
                      fontweight='bold', fontsize='14', color='indianred')
+        actual_traj_line, = ax.plot(robot_traj[:, 0], robot_traj[:, 1], color='black', label='Actual Trajectory')
         heading_markers = ax.quiver(robot_traj[::skip, 0], robot_traj[::skip, 1],
                                     np.cos(robot_traj[::skip, 2]), -np.sin(robot_traj[::skip, 2]),
                                     color='blue', units='inches', scale=4.0, zorder=3, label='Heading')
-        plt.legend(handles=[robot_marker, dir_marker, path_line, heading_markers],
+        plt.legend(handles=[robot_marker, dir_marker, path_line, actual_traj_line, heading_markers],
                    loc='center left', bbox_to_anchor=(1, 0.5))
         plt.draw()
         print("Press spacebar to continue...")
