@@ -4,6 +4,7 @@ import numpy as np
 
 from controller import Controller
 from map import Map
+from models.motion_models import diff_drive_1
 from planners import PRM
 from robot import Robot
 from utils.load_map import load_map
@@ -48,11 +49,12 @@ if __name__ == "__main__":
 
     # Initialize robot to starting position with zero heading
     # and initialize its controller
-    robot = Robot(k_w=robot_k_w,
-                  max_linear_vel=robot_max_linear_vel,
-                  max_angular_vel=robot_max_angular_vel)
-    robot.set_pose(start[0], start[1], 0.0)
-    controller = Controller(robot)
+    motion_model = diff_drive_1
+    robot = Robot([start[0], start[1], 0.0], diff_drive_1)
+    controller = Controller(robot,
+                            k_w=robot_k_w,
+                            max_linear_vel=robot_max_linear_vel,
+                            max_angular_vel=robot_max_angular_vel)
 
     # Initialize an empty numpy array to store the robot trajectory
     # and add the start point to the trajectory

@@ -2,7 +2,9 @@ import configparser
 import matplotlib.pyplot as plt
 import numpy as np
 
+from controller import VectorController
 from map import Map
+from models.motion_models import diff_drive_1, diff_drive_2
 from planners import PotentialField
 from robot import Robot
 from utils import load_map
@@ -43,10 +45,12 @@ if __name__ == "__main__":
     pf = PotentialField(goal, map, k_a=k_a, k_r=k_r, obs_dist_thresh=obstacle_dist_thresh)
 
     # Initialize robot to starting position with zero heading
-    robot = Robot(k_w=robot_k_w,
-                  max_linear_vel=robot_max_linear_vel,
-                  max_angular_vel=robot_max_angular_vel)
-    robot.set_pose(start[0], start[1], 0.0)
+    motion_model = diff_drive_1
+    robot = Robot([start[0], start[1], 0.0], motion_model)
+    controller = VectorController(robot,
+                                  k_w=robot_k_w,
+                                  max_linear_vel=robot_max_linear_vel,
+                                  max_angular_vel=robot_max_angular_vel)
 
     # Initialize an empty numpy array to store the robot trajectory
     # and add the start point to the trajectory
@@ -66,8 +70,6 @@ if __name__ == "__main__":
             'key_release_event',
             lambda event: [exit(0) if event.key == 'escape' else None])
 
-        # Propagate robot using motion vector and get its pose
-        robot.propagate(dt=dt)
         robot_pose = robot.get_pose()
         robot_traj = np.append(robot_traj, [robot_pose], axis=0)
 
@@ -105,7 +107,9 @@ if __name__ == "__main__":
         # Get the motion vectors to apply to the robot for propagation
         # in the next update cycle
         motion_vec = pf.get_force(robot_pose[0:2])
-        robot.set_desired_motion(motion_vec)
+        # Propagate robot using motion vector and get its pose
+        controller.loop(motion_vec=motion_vec, dt=dt)
+        # robot.set_desired_motion(motion_vec)
 
     # Successfully Reached Goal
     print("Reached Goal!")
