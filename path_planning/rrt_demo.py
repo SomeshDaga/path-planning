@@ -2,7 +2,7 @@ import configparser
 import matplotlib.pyplot as plt
 import numpy as np
 
-from controller import PurePursuitController
+from controller import Controller
 from map import Map
 from models.motion_models import diff_drive_1, bicycle_1
 from planners import RRT
@@ -49,10 +49,13 @@ if __name__ == "__main__":
 
     # Initialize robot to starting position with zero heading
     # and initialize its controller
-    motion_model = bicycle_1
+    motion_model = diff_drive_1
     robot = Robot([start[0], start[1], 0.0],
                   motion_model)
-    controller = PurePursuitController(robot)
+    controller = Controller(robot,
+                            k_w=robot_k_w,
+                            max_linear_vel=robot_max_linear_vel,
+                            max_angular_vel=robot_max_angular_vel)
 
     # Visit each waypoint sequentially
     fig = plt.figure()
@@ -91,7 +94,6 @@ if __name__ == "__main__":
 
         robot_marker = None
         dir_marker = None
-        lookahead_marker = None
 
         # Initialize an empty numpy array to store the robot trajectory
         # and add the start point to the trajectory
@@ -104,7 +106,7 @@ if __name__ == "__main__":
                 lambda event: [exit(0) if event.key == 'escape' else None])
 
             # Apply control inputs and get resulting robot pose
-            lookahead_pt = controller.loop(dt=dt)
+            controller.loop(dt=dt)
             robot_pose = robot.get_pose()
             robot_traj = np.append(robot_traj, [robot_pose], axis=0)
 
@@ -113,10 +115,7 @@ if __name__ == "__main__":
                 ax.lines.remove(robot_marker)
             if dir_marker:
                 dir_marker.remove()
-            if lookahead_marker:
-                ax.lines.remove(lookahead_marker)
 
-            lookahead_marker, = ax.plot(lookahead_pt[0], lookahead_pt[1], 'bx', zorder=5, label='Lookahead Point')
             robot_marker, = ax.plot(robot_pose[0], robot_pose[1], 'bo',
                                     markersize=11.25, markeredgewidth=2, label='Robot')
             dir_marker = ax.quiver(robot_pose[0], robot_pose[1],

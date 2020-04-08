@@ -50,7 +50,7 @@ if __name__ == "__main__":
     # Initialize robot to starting position with zero heading
     # and initialize its controller
     motion_model = diff_drive_1
-    robot = Robot([start[0], start[1], 0.0], diff_drive_1)
+    robot = Robot([start[0], start[1], 0.0], motion_model)
     controller = Controller(robot,
                             k_w=robot_k_w,
                             max_linear_vel=robot_max_linear_vel,
