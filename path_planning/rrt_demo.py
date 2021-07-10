@@ -94,6 +94,9 @@ if __name__ == "__main__":
 
         robot_marker = None
         dir_marker = None
+        # Plot the waypoint
+        waypoint_marker, = ax.plot(waypoint[0], waypoint[1], 'kx', markeredgewidth=5, markersize=8,
+                                   label='Next Waypoint')
 
         # Initialize an empty numpy array to store the robot trajectory
         # and add the start point to the trajectory
@@ -121,6 +124,7 @@ if __name__ == "__main__":
             dir_marker = ax.quiver(robot_pose[0], robot_pose[1],
                                    np.cos(robot_pose[2]), -np.sin(robot_pose[2]),
                                    color='r', scale=2.5, scale_units='inches', label='Final Heading', zorder=4)
+
             plt.grid(True)
             plt.pause(.0001)
 
@@ -132,7 +136,7 @@ if __name__ == "__main__":
         heading_markers = ax.quiver(robot_traj[::skip, 0], robot_traj[::skip, 1],
                                     np.cos(robot_traj[::skip, 2]), -np.sin(robot_traj[::skip, 2]),
                                     color='blue', units='inches', scale=4.0, zorder=3, label='Heading')
-        plt.legend(handles=[robot_marker, dir_marker, path_line, actual_traj_line, heading_markers],
+        plt.legend(handles=[robot_marker, dir_marker, path_line, actual_traj_line, heading_markers, waypoint_marker],
                    loc='center left', bbox_to_anchor=(1, 0.5))
         plt.draw()
         print("Press spacebar to continue...")

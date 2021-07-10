@@ -84,6 +84,9 @@ if __name__ == "__main__":
         # Plot robot position
         ax.plot(robot_pose[0], robot_pose[1], 'ro', label='Robot', markersize=11.25)
 
+        # Plot goal position
+        ax.plot(goal[0], goal[1], 'kx', label='Goal', markeredgewidth=5, markersize=8)
+
         # Plot directions of attractive and repulsive forces
         r = pf.calc_repulsive_force(robot_pose[0:2])
         # Only normalize the force if it is non-zero
@@ -109,7 +112,6 @@ if __name__ == "__main__":
         motion_vec = pf.get_force(robot_pose[0:2])
         # Propagate robot using motion vector and get its pose
         controller.loop(motion_vec=motion_vec, dt=dt)
-        # robot.set_desired_motion(motion_vec)
 
     # Successfully Reached Goal
     print("Reached Goal!")
